@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">keisen - 罫線で組んだ枠のロゴ</title>
+  <style>
+    .bg { fill: #f4f4f2; }
+    .ink { stroke: #262623; }
+    .accent { stroke: #5b4d8c; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #171716; }
+      .ink { stroke: #e8e8e4; }
+      .accent { stroke: #a999d8; }
+    }
+  </style>
+  <rect class="bg" width="128" height="128" rx="28"/>
+  <g fill="none" stroke-width="7" stroke-linecap="square">
+    <path class="ink" d="M28 28h72v72H28z"/>
+    <path class="ink" d="M28 64h72"/>
+    <path class="accent" d="M64 28v36"/>
+    <path class="accent" d="M46 82h36" stroke-width="8"/>
+  </g>
+</svg>
