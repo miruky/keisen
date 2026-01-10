@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 330" role="img" aria-labelledby="arch-title">
+  <title id="arch-title">keisenの構成図。エディタの本文を罫線文字表に基づいてSVGへ変換し、プレビューと書き出しに使う。</title>
+  <style>
+    .box { fill: #fdfdfc; stroke: #e0e0da; stroke-width: 1.5; }
+    .name { fill: #262623; font: 600 15px system-ui, sans-serif; }
+    .label { fill: #6c6c66; font: 13px system-ui, sans-serif; }
+    .edge { stroke: #6c6c66; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .edge-label { fill: #6c6c66; font: 12px system-ui, sans-serif; }
+    #arrow path { fill: #6c6c66; }
+    @media (prefers-color-scheme: dark) {
+      .box { fill: #212120; stroke: #363633; }
+      .name { fill: #e8e8e4; }
+      .label { fill: #9d9d95; }
+      .edge { stroke: #9d9d95; }
+      .edge-label { fill: #9d9d95; }
+      #arrow path { fill: #9d9d95; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="box" x="60" y="40" width="220" height="96" rx="14"/>
+  <text class="name" x="170" y="74" text-anchor="middle">エディタ(app.ts)</text>
+  <text class="label" x="170" y="98" text-anchor="middle">textarea+パレット+ひな形</text>
+  <text class="label" x="170" y="118" text-anchor="middle">本文はlocalStorageへ</text>
+
+  <rect class="box" x="330" y="40" width="220" height="96" rx="14"/>
+  <text class="name" x="440" y="74" text-anchor="middle">chars.ts</text>
+  <text class="label" x="440" y="98" text-anchor="middle">罫線文字→上下左右の線分</text>
+  <text class="label" x="440" y="118" text-anchor="middle">表示幅(全角・半角)の判定</text>
+
+  <rect class="box" x="600" y="40" width="220" height="96" rx="14"/>
+  <text class="name" x="710" y="74" text-anchor="middle">svgconv.ts</text>
+  <text class="label" x="710" y="98" text-anchor="middle">罫線は線、文字はtextとして</text>
+  <text class="label" x="710" y="118" text-anchor="middle">viewBox付きSVGへ</text>
+
+  <path class="edge" d="M280 88 H322"/>
+  <text class="edge-label" x="288" y="80">本文</text>
+  <path class="edge" d="M550 88 H592"/>
+  <text class="edge-label" x="556" y="80">線分表</text>
+
+  <path class="edge" d="M710 136 V200"/>
+  <text class="edge-label" x="722" y="174">SVG文字列</text>
+
+  <rect class="box" x="550" y="204" width="320" height="84" rx="14"/>
+  <text class="name" x="710" y="238" text-anchor="middle">プレビュー・コピー・ダウンロード</text>
+  <text class="label" x="710" y="262" text-anchor="middle">currentColorで貼り付け先のテーマに追従</text>
+</svg>
