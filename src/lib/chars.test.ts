@@ -20,12 +20,14 @@ describe('BOX_CHARS', () => {
 });
 
 describe('charWidth', () => {
-  it('罫線文字と全角文字は2桁、半角は1桁', () => {
-    expect(charWidth('─')).toBe(2);
+  it('全角文字は2桁、半角と罫線文字は1桁', () => {
     expect(charWidth('あ')).toBe(2);
     expect(charWidth('漢')).toBe(2);
     expect(charWidth('A')).toBe(1);
     expect(charWidth(' ')).toBe(1);
     expect(charWidth('|')).toBe(1);
+    // 罫線文字は等幅フォントで1セル幅なので1桁(エディタの見た目と揃える)
+    expect(charWidth('─')).toBe(1);
+    expect(charWidth('┃')).toBe(1);
   });
 });
