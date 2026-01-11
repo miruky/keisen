@@ -4,9 +4,9 @@ import { textToSvg } from './svgconv';
 describe('textToSvg', () => {
   it('罫線文字を線として引き、グリフを置かない', () => {
     const svg = textToSvg('─', { cellWidth: 10, cellHeight: 20 });
-    // 中央(10,10)から左右へ
-    expect(svg).toContain('M 10 10 H 0');
-    expect(svg).toContain('M 10 10 H 20');
+    // 1セル幅なので中央(5,10)から左右の端(0と10)へ
+    expect(svg).toContain('M 5 10 H 0');
+    expect(svg).toContain('M 5 10 H 10');
     expect(svg).not.toContain('<text');
   });
 
@@ -38,7 +38,9 @@ describe('textToSvg', () => {
 
   it('複数行で高さが増え、viewBoxが内容に合う', () => {
     const svg = textToSvg('┌─┐\n│A│\n└─┘');
-    expect(svg).toContain('viewBox="0 0 60 60"');
+    // 3列×幅10、3行×高さ20。固有サイズもviewBoxと一致する
+    expect(svg).toContain('viewBox="0 0 30 60"');
+    expect(svg).toContain('width="30" height="60"');
   });
 
   it('XMLに危険な文字をエスケープする', () => {
