@@ -61,8 +61,10 @@ export function textToSvg(text: string, options: ConvertOptions = {}): string {
 
   const width = maxCols * cw;
   const height = Math.max(1, lines.length) * ch;
+  // viewBoxに加えて固有サイズ(width/height)も持たせる。これがないと埋め込み先で
+  // 既定の300x150に潰れて表示されるため、プレビューも書き出し先も実寸で描かれる。
   const parts: string[] = [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmt(width)} ${fmt(height)}" role="img" aria-label="罫線図">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(width)}" height="${fmt(height)}" viewBox="0 0 ${fmt(width)} ${fmt(height)}" role="img" aria-label="罫線図">`,
     `  <g fill="currentColor" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="${fmt(ch * 0.7)}">`,
   ];
   parts.push(...texts);
