@@ -51,12 +51,13 @@ export function isBoxChar(ch: string): boolean {
 }
 
 /**
- * 文字の表示幅。罫線文字と全角文字は2桁、それ以外は1桁として扱う。
- * 等幅フォントでの見た目に合わせた近似で、East Asian Widthの完全な実装ではない。
+ * 文字の表示幅。全角文字は2桁、半角と罫線文字は1桁として扱う。
+ * 罫線文字(U+2500–257F)は等幅フォントで1セル幅に描かれるので、エディタの
+ * 見た目とSVGの座標を一致させるため1桁とする。East Asian Widthの完全な実装ではない。
  */
 export function charWidth(ch: string): number {
   const code = ch.codePointAt(0) ?? 0;
-  if (isBoxChar(ch)) return 2;
+  if (isBoxChar(ch)) return 1;
   if (
     (code >= 0x1100 && code <= 0x115f) ||
     (code >= 0x2e80 && code <= 0x9fff) ||
