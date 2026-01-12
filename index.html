@@ -11,6 +11,22 @@
     <meta name="theme-color" content="#171716" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <title>keisen | 罫線図エディタ</title>
+    <script>
+      // 描画前にテーマを解決し、初回フラッシュ(FOUC)を防ぐ。
+      // 保存値は設定(自動/ライト/ダーク)で、data-themeには解決済みの明暗を入れる。
+      (function () {
+        try {
+          var pref = localStorage.getItem('keisen.theme.v1');
+          if (pref !== 'light' && pref !== 'dark' && pref !== 'system') pref = 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>
