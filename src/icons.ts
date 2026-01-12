@@ -18,4 +18,7 @@ export const icons = {
   ),
   check: svg('<path d="m5 13 4.5 4.5L19 7"/>'),
   download: svg('<path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/>'),
+  theme: svg(
+    '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/>',
+  ),
 } as const;
