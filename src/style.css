@@ -3,7 +3,7 @@
    使い分け、罫線文字のパレットは精密な道具盤のように整える。 */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   --paper: #f3f2ee;
   --surface: #faf9f6;
@@ -21,21 +21,21 @@
   --sans: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', system-ui, sans-serif;
 }
 
-/* ダークはシステム設定(prefers-color-scheme)に追従する。
-   沈んだ地色に合わせ、アクセントと罫線を持ち上げる */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #16161a;
-    --surface: #1d1d22;
-    --ink: #e8e7e2;
-    --muted: #9a978f;
+/* ダークは沈んだ地色に合わせ、アクセントと罫線を持ち上げる。
+   data-theme は index.html のインラインスクリプトが描画前に解決して付ける */
+:root[data-theme='dark'] {
+  color-scheme: dark;
 
-    --hair: #2b2b30;
-    --rule: #37373d;
+  --paper: #16161a;
+  --surface: #1d1d22;
+  --ink: #e8e7e2;
+  --muted: #9a978f;
 
-    --accent: #ab9be0;
-    --accent-weak: #272340;
-  }
+  --hair: #2b2b30;
+  --rule: #37373d;
+
+  --accent: #ab9be0;
+  --accent-weak: #272340;
 }
 
 * {
@@ -268,6 +268,34 @@ svg {
   display: flex;
   gap: 7px;
   flex-wrap: wrap;
+}
+
+.export-settings {
+  display: flex;
+  gap: calc(var(--step) * 1.5);
+  flex-wrap: wrap;
+}
+
+.setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.setting select {
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 5px;
+  padding: 5px 8px;
+}
+
+.setting select:hover {
+  border-color: var(--rule);
 }
 
 /* ---- 作業領域 ---- */
