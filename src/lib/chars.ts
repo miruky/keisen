@@ -8,6 +8,8 @@ export interface Segments {
   down: Weight | null;
   left: Weight | null;
   right: Weight | null;
+  /** 角を丸める(╭╮╰╯)。直交する2方向を弧でつなぐ */
+  rounded?: boolean;
 }
 
 const seg = (
@@ -16,6 +18,14 @@ const seg = (
   left: Weight | null,
   right: Weight | null,
 ): Segments => ({ up, down, left, right });
+
+/** 角丸コーナー。直交する2方向だけを持つ */
+const arc = (
+  up: Weight | null,
+  down: Weight | null,
+  left: Weight | null,
+  right: Weight | null,
+): Segments => ({ up, down, left, right, rounded: true });
 
 const L = 'light';
 const H = 'heavy';
@@ -44,6 +54,10 @@ export const BOX_CHARS: Record<string, Segments> = {
   '┳': seg(null, H, H, H),
   '┻': seg(H, null, H, H),
   '╋': seg(H, H, H, H),
+  '╭': arc(null, L, null, L),
+  '╮': arc(null, L, L, null),
+  '╰': arc(L, null, null, L),
+  '╯': arc(L, null, L, null),
 };
 
 export function isBoxChar(ch: string): boolean {

@@ -55,4 +55,18 @@ describe('textToSvg', () => {
     expect(svg).toContain('stroke="currentColor"');
     expect(svg).toContain('fill="currentColor"');
   });
+
+  it('角丸コーナーは直線でなく弧でつなぐ', () => {
+    const svg = textToSvg('╭', { cellWidth: 10, cellHeight: 20 });
+    // 右端からのアプローチ、四半円の弧、下端への接続
+    expect(svg).toContain('A 4.5 4.5 0 0 1');
+    expect(svg).not.toContain('<text');
+  });
+
+  it('線の太さ倍率で全体のstroke-widthが変わる', () => {
+    const svg = textToSvg('─━', { strokeScale: 2 });
+    // light 1.5*2=3、heavy 3.4*2=6.8
+    expect(svg).toContain('stroke-width="3"');
+    expect(svg).toContain('stroke-width="6.8"');
+  });
 });

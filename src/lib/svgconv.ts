@@ -8,6 +8,8 @@ export interface ConvertOptions {
   cellWidth?: number;
   /** 1行の高さ */
   cellHeight?: number;
+  /** 線の太さの倍率。細め・標準・太めの切替に使う */
+  strokeScale?: number;
 }
 
 function esc(text: string): string {
@@ -23,6 +25,7 @@ const fmt = (n: number): string => String(Math.round(n * 100) / 100);
 export function textToSvg(text: string, options: ConvertOptions = {}): string {
   const cw = options.cellWidth ?? 10;
   const ch = options.cellHeight ?? 20;
+  const scale = options.strokeScale ?? 1;
   const lines = text.replace(/\r\n/g, '\n').split('\n');
 
   const lightPath: string[] = [];
@@ -41,13 +44,31 @@ export function textToSvg(text: string, options: ConvertOptions = {}): string {
       if (segments) {
         const target = (weight: 'light' | 'heavy'): string[] =>
           weight === 'light' ? lightPath : heavyPath;
-        if (segments.up) target(segments.up).push(`M ${fmt(cx)} ${fmt(cy)} V ${fmt(row * ch)}`);
-        if (segments.down) {
-          target(segments.down).push(`M ${fmt(cx)} ${fmt(cy)} V ${fmt((row + 1) * ch)}`);
-        }
-        if (segments.left) target(segments.left).push(`M ${fmt(cx)} ${fmt(cy)} H ${fmt(col * cw)}`);
-        if (segments.right) {
-          target(segments.right).push(`M ${fmt(cx)} ${fmt(cy)} H ${fmt((col + width) * cw)}`);
+        if (segments.rounded) {
+          // 直交する2方向を、中央付近で四半円の弧につなぐ
+          const r = Math.min(cw, ch) * 0.45;
+          const hRight = segments.right !== null;
+          const vDown = segments.down !== null;
+          const hx = hRight ? (col + width) * cw : col * cw;
+          const vy = vDown ? (row + 1) * ch : row * ch;
+          const hApproach = cx + (hRight ? r : -r);
+          const vApproach = cy + (vDown ? r : -r);
+          const sweep = hRight === vDown ? 1 : 0;
+          const weight = segments.down ?? segments.up ?? segments.left ?? segments.right ?? 'light';
+          target(weight).push(
+            `M ${fmt(hx)} ${fmt(cy)} H ${fmt(hApproach)} A ${fmt(r)} ${fmt(r)} 0 0 ${sweep} ${fmt(cx)} ${fmt(vApproach)} V ${fmt(vy)}`,
+          );
+        } else {
+          if (segments.up) target(segments.up).push(`M ${fmt(cx)} ${fmt(cy)} V ${fmt(row * ch)}`);
+          if (segments.down) {
+            target(segments.down).push(`M ${fmt(cx)} ${fmt(cy)} V ${fmt((row + 1) * ch)}`);
+          }
+          if (segments.left) {
+            target(segments.left).push(`M ${fmt(cx)} ${fmt(cy)} H ${fmt(col * cw)}`);
+          }
+          if (segments.right) {
+            target(segments.right).push(`M ${fmt(cx)} ${fmt(cy)} H ${fmt((col + width) * cw)}`);
+          }
         }
       } else if (charRaw !== ' ' && charRaw !== '　') {
         texts.push(
@@ -71,12 +92,12 @@ export function textToSvg(text: string, options: ConvertOptions = {}): string {
   parts.push(`  </g>`);
   if (lightPath.length > 0) {
     parts.push(
-      `  <path d="${lightPath.join(' ')}" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="square"/>`,
+      `  <path d="${lightPath.join(' ')}" stroke="currentColor" stroke-width="${fmt(1.5 * scale)}" fill="none" stroke-linecap="square"/>`,
     );
   }
   if (heavyPath.length > 0) {
     parts.push(
-      `  <path d="${heavyPath.join(' ')}" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="square"/>`,
+      `  <path d="${heavyPath.join(' ')}" stroke="currentColor" stroke-width="${fmt(3.4 * scale)}" fill="none" stroke-linecap="square"/>`,
     );
   }
   parts.push(`</svg>`);

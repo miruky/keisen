@@ -17,6 +17,15 @@ describe('BOX_CHARS', () => {
     expect(BOX_CHARS['┼']).toEqual({ up: 'light', down: 'light', left: 'light', right: 'light' });
     expect(BOX_CHARS['┃']).toEqual({ up: 'heavy', down: 'heavy', left: null, right: null });
   });
+
+  it('角丸コーナーは直交2方向にroundedが立つ', () => {
+    for (const ch of ['╭', '╮', '╰', '╯']) {
+      expect(isBoxChar(ch)).toBe(true);
+      expect(BOX_CHARS[ch]?.rounded).toBe(true);
+    }
+    expect(BOX_CHARS['╭']).toMatchObject({ down: 'light', right: 'light', up: null, left: null });
+    expect(BOX_CHARS['╯']).toMatchObject({ up: 'light', left: 'light', down: null, right: null });
+  });
 });
 
 describe('charWidth', () => {
