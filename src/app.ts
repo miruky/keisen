@@ -1,16 +1,46 @@
 // 画面の描画。テキストの編集ではプレビューだけを差し替え、textareaは
 // 再生成しない(IMEの変換とキャレットを守るため)。
 
-import { textToSvg } from './lib/svgconv';
+import { textToSvg, type ConvertOptions } from './lib/svgconv';
 import { icons } from './icons';
+import {
+  nextPref,
+  PREF_LABEL,
+  readPref,
+  resolveTheme,
+  THEME_KEY,
+  type ThemePref,
+} from './lib/theme';
 
 /** パレットに並べる罫線文字。行ごとにまとまりを持たせる */
 const PALETTE_ROWS: string[][] = [
   ['─', '│', '┌', '┐', '└', '┘'],
   ['├', '┤', '┬', '┴', '┼'],
+  ['╭', '╮', '╰', '╯', '→', '←', '↑', '↓'],
   ['━', '┃', '┏', '┓', '┗', '┛'],
   ['┣', '┫', '┳', '┻', '╋'],
 ];
+
+/** 書き出しの見た目を決めるプリセット */
+const WEIGHTS: Record<string, number> = { thin: 0.7, normal: 1, thick: 1.6 };
+const SPACINGS: Record<string, [number, number]> = {
+  compact: [8, 16],
+  normal: [10, 20],
+  wide: [13, 26],
+};
+const WEIGHT_LABEL: Record<string, string> = { thin: '細め', normal: '標準', thick: '太め' };
+const SPACING_LABEL: Record<string, string> = { compact: '詰め', normal: '標準', wide: '広め' };
+const OPTS_KEY = 'keisen.opts.v1';
+
+/** ラベル表からselectのoption列を作り、選択中の値にselectedを付ける */
+function selectOptions(labels: Record<string, string>, selected: string): string {
+  return Object.entries(labels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${value === selected ? ' selected' : ''}>${label}</option>`,
+    )
+    .join('');
+}
 
 interface Template {
   name: string;
@@ -54,8 +84,31 @@ export function createApp({ root, storage }: AppDeps): void {
   let text = storage.getItem(STORAGE_KEY) ?? TEMPLATES[1]?.text ?? '';
   let copied = false;
 
+  let weightKey = 'normal';
+  let spacingKey = 'normal';
+  try {
+    const raw = JSON.parse(storage.getItem(OPTS_KEY) ?? '{}') as Record<string, unknown>;
+    if (typeof raw.weight === 'string' && raw.weight in WEIGHTS) weightKey = raw.weight;
+    if (typeof raw.spacing === 'string' && raw.spacing in SPACINGS) spacingKey = raw.spacing;
+  } catch {
+    // 壊れていれば既定のまま
+  }
+
   function save(): void {
     storage.setItem(STORAGE_KEY, text);
+  }
+
+  function saveOpts(): void {
+    storage.setItem(OPTS_KEY, JSON.stringify({ weight: weightKey, spacing: spacingKey }));
+  }
+
+  function exportOptions(): ConvertOptions {
+    const [cellWidth, cellHeight] = SPACINGS[spacingKey] ?? SPACINGS.normal!;
+    return { cellWidth, cellHeight, strokeScale: WEIGHTS[weightKey] ?? 1 };
+  }
+
+  function svgNow(): string {
+    return textToSvg(text, exportOptions());
   }
 
   function updatePreview(): void {
@@ -64,7 +117,7 @@ export function createApp({ root, storage }: AppDeps): void {
       preview.innerHTML =
         text.trim() === ''
           ? '<p class="hint">左のエディタに罫線図を書くと、ここにSVGが出ます。</p>'
-          : textToSvg(text);
+          : svgNow();
     }
     updateNotes();
   }
@@ -119,6 +172,9 @@ export function createApp({ root, storage }: AppDeps): void {
         <div class="site-header-inner">
           <span class="brand">${icons.logo}<span>keisen</span></span>
           <div class="header-actions">
+            <button type="button" class="icon-button" id="theme-toggle" aria-label="テーマを切り替える">
+              ${icons.theme}<span id="theme-label">自動</span>
+            </button>
             <div class="export-actions">
               <button type="button" class="button" id="copy-svg">
                 ${copied ? icons.check : icons.copy}<span>${copied ? 'コピーしました' : 'SVGをコピー'}</span></button>
@@ -137,6 +193,19 @@ export function createApp({ root, storage }: AppDeps): void {
           <div class="tool-group templates">
             <span class="templates-label">ひな形</span>
             <div class="templates-row" role="group" aria-label="ひな形">${templatesHtml}</div>
+          </div>
+          <div class="tool-group">
+            <span class="group-label">書き出し</span>
+            <div class="export-settings">
+              <label class="setting">
+                <span>線</span>
+                <select id="weight-select">${selectOptions(WEIGHT_LABEL, weightKey)}</select>
+              </label>
+              <label class="setting">
+                <span>間隔</span>
+                <select id="spacing-select">${selectOptions(SPACING_LABEL, spacingKey)}</select>
+              </label>
+            </div>
           </div>
         </div>
         <div class="workspace">
@@ -187,7 +256,7 @@ export function createApp({ root, storage }: AppDeps): void {
     }
 
     root.querySelector('#copy-svg')?.addEventListener('click', () => {
-      void navigator.clipboard.writeText(textToSvg(text)).then(() => {
+      void navigator.clipboard.writeText(svgNow()).then(() => {
         copied = true;
         const btn = root.querySelector('#copy-svg span:last-child');
         if (btn) btn.textContent = 'コピーしました';
@@ -199,14 +268,55 @@ export function createApp({ root, storage }: AppDeps): void {
       });
     });
     root.querySelector('#download-svg')?.addEventListener('click', () => {
-      const url = URL.createObjectURL(new Blob([textToSvg(text)], { type: 'image/svg+xml' }));
+      const url = URL.createObjectURL(new Blob([svgNow()], { type: 'image/svg+xml' }));
       const a = document.createElement('a');
       a.href = url;
       a.download = 'keisen.svg';
       a.click();
       URL.revokeObjectURL(url);
     });
+
+    const weightSelect = root.querySelector<HTMLSelectElement>('#weight-select');
+    weightSelect?.addEventListener('change', () => {
+      weightKey = weightSelect.value;
+      saveOpts();
+      updatePreview();
+    });
+    const spacingSelect = root.querySelector<HTMLSelectElement>('#spacing-select');
+    spacingSelect?.addEventListener('change', () => {
+      spacingKey = spacingSelect.value;
+      saveOpts();
+      updatePreview();
+    });
+
+    root.querySelector('#theme-toggle')?.addEventListener('click', cycleTheme);
   }
 
+  // テーマ。保存値を読み、解決済みのライト/ダークをdata-themeに反映する。
+  // 描画前の初期適用はindex.htmlのインラインスクリプトが済ませている。
+  const systemDark =
+    typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-color-scheme: dark)')
+      : null;
+  let themePref: ThemePref = readPref((k) => storage.getItem(k));
+
+  function applyTheme(): void {
+    const resolved = resolveTheme(themePref, systemDark?.matches ?? false);
+    document.documentElement.dataset.theme = resolved;
+    const label = root.querySelector<HTMLElement>('#theme-label');
+    if (label) label.textContent = PREF_LABEL[themePref];
+  }
+
+  function cycleTheme(): void {
+    themePref = nextPref(themePref);
+    storage.setItem(THEME_KEY, themePref);
+    applyTheme();
+  }
+
+  systemDark?.addEventListener('change', () => {
+    if (themePref === 'system') applyTheme();
+  });
+
   render();
+  applyTheme();
 }
