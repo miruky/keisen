@@ -28,8 +28,8 @@ const TEMPLATES: Template[] = [
       '┌──────┬──────┬──────┐',
       '│ 項目 │ 数量 │ 単位 │',
       '├──────┼──────┼──────┤',
-      '│ りんご │  3   │ 個  │',
-      '│ 牛乳  │  1   │ 本  │',
+      '│ 林檎 │  3   │  個  │',
+      '│ 牛乳 │  1   │  本  │',
       '└──────┴──────┴──────┘',
     ].join('\n'),
   },
@@ -66,6 +66,23 @@ export function createApp({ root, storage }: AppDeps): void {
           ? '<p class="hint">左のエディタに罫線図を書くと、ここにSVGが出ます。</p>'
           : textToSvg(text);
     }
+    updateNotes();
+  }
+
+  /** 行数とSVGの寸法を見出し脇に出す */
+  function updateNotes(): void {
+    const editorNote = root.querySelector<HTMLElement>('#editor-note');
+    if (editorNote) {
+      const lines = text === '' ? 0 : text.split('\n').length;
+      editorNote.textContent = `${lines}行`;
+    }
+    const previewNote = root.querySelector<HTMLElement>('#preview-note');
+    if (previewNote) {
+      const svg = root.querySelector<SVGElement>('#preview svg');
+      const w = svg?.getAttribute('width');
+      const h = svg?.getAttribute('height');
+      previewNote.textContent = w && h ? `${w} × ${h}` : '';
+    }
   }
 
   /** キャレット位置に文字列を差し込み、キャレットを後ろへ送る */
@@ -101,30 +118,47 @@ export function createApp({ root, storage }: AppDeps): void {
       <header class="site-header">
         <div class="site-header-inner">
           <span class="brand">${icons.logo}<span>keisen</span></span>
-          <div class="export-actions">
-            <button type="button" class="button" id="copy-svg">
-              ${copied ? icons.check : icons.copy}<span>${copied ? 'コピーしました' : 'SVGをコピー'}</span></button>
-            <button type="button" class="button primary" id="download-svg">
-              ${icons.download}<span>SVGを保存</span></button>
+          <div class="header-actions">
+            <div class="export-actions">
+              <button type="button" class="button" id="copy-svg">
+                ${copied ? icons.check : icons.copy}<span>${copied ? 'コピーしました' : 'SVGをコピー'}</span></button>
+              <button type="button" class="button primary" id="download-svg">
+                ${icons.download}<span>SVGを保存</span></button>
+            </div>
           </div>
         </div>
       </header>
       <main class="site-main">
         <div class="toolbar">
-          <div class="palette" role="group" aria-label="罫線文字">${paletteHtml}</div>
-          <div class="templates" role="group" aria-label="ひな形">
-            <span class="templates-label">ひな形:</span>
-            ${templatesHtml}
+          <div class="tool-group">
+            <span class="group-label">罫線</span>
+            <div class="palette" role="group" aria-label="罫線文字">${paletteHtml}</div>
+          </div>
+          <div class="tool-group templates">
+            <span class="templates-label">ひな形</span>
+            <div class="templates-row" role="group" aria-label="ひな形">${templatesHtml}</div>
           </div>
         </div>
         <div class="workspace">
-          <textarea id="editor" spellcheck="false" aria-label="罫線図の本文"
-            placeholder="ここに罫線文字で図を描く">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</textarea>
-          <div class="preview-pane">
-            <div id="preview" class="preview"></div>
+          <div class="field">
+            <div class="field-head">
+              <span class="group-label">エディタ</span>
+              <span class="field-note" id="editor-note"></span>
+            </div>
+            <textarea id="editor" spellcheck="false" aria-label="罫線図の本文"
+              placeholder="ここに罫線文字で図を描く">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</textarea>
+          </div>
+          <div class="field">
+            <div class="field-head">
+              <span class="group-label">プレビュー</span>
+              <span class="field-note" id="preview-note"></span>
+            </div>
+            <div class="preview-pane">
+              <div id="preview" class="preview"></div>
+            </div>
           </div>
         </div>
-        <p class="hint">罫線文字は線として、その他の文字はテキストとしてSVGに変換します。線と文字はcurrentColorで描かれるので、貼り付け先の配色に追従します。</p>
+        <p class="hint">罫線文字は線として、その他の文字はテキストとしてSVGに変換します。線も文字もcurrentColorで描くので、貼り付け先の文字色にそのまま追従します。</p>
       </main>
       <footer class="site-footer">
         <p>keisen — 罫線図エディタ。本文はこの端末のブラウザにだけ保存されます。</p>
