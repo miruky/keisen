@@ -2,6 +2,7 @@
 // 再生成しない(IMEの変換とキャレットを守るため)。
 
 import { textToSvg, type ConvertOptions } from './lib/svgconv';
+import { diagramFromHash, diagramToHash } from './lib/share';
 import { icons } from './icons';
 import {
   nextPref,
@@ -81,7 +82,9 @@ export interface AppDeps {
 }
 
 export function createApp({ root, storage }: AppDeps): void {
-  let text = storage.getItem(STORAGE_KEY) ?? TEMPLATES[1]?.text ?? '';
+  // 共有リンク(#d=...)で開かれたときは、その図を初期値にする。
+  const shared = typeof location !== 'undefined' ? diagramFromHash(location.hash) : null;
+  let text = shared ?? storage.getItem(STORAGE_KEY) ?? TEMPLATES[1]?.text ?? '';
   let copied = false;
 
   let weightKey = 'normal';
@@ -176,6 +179,8 @@ export function createApp({ root, storage }: AppDeps): void {
               ${icons.theme}<span id="theme-label">自動</span>
             </button>
             <div class="export-actions">
+              <button type="button" class="button" id="share-link">
+                ${icons.link}<span id="share-label">リンクをコピー</span></button>
               <button type="button" class="button" id="copy-svg">
                 ${copied ? icons.check : icons.copy}<span>${copied ? 'コピーしました' : 'SVGをコピー'}</span></button>
               <button type="button" class="button primary" id="download-svg">
@@ -276,6 +281,20 @@ export function createApp({ root, storage }: AppDeps): void {
       URL.revokeObjectURL(url);
     });
 
+    root.querySelector('#share-link')?.addEventListener('click', () => {
+      const hash = diagramToHash(text);
+      history.replaceState(null, '', hash);
+      const url = `${location.origin}${location.pathname}${location.search}${hash}`;
+      const label = root.querySelector('#share-label');
+      void navigator.clipboard.writeText(url).then(() => {
+        if (label) label.textContent = 'リンクをコピーしました';
+        setTimeout(() => {
+          const later = root.querySelector('#share-label');
+          if (later) later.textContent = 'リンクをコピー';
+        }, 2000);
+      });
+    });
+
     const weightSelect = root.querySelector<HTMLSelectElement>('#weight-select');
     weightSelect?.addEventListener('change', () => {
       weightKey = weightSelect.value;
@@ -317,6 +336,7 @@ export function createApp({ root, storage }: AppDeps): void {
     if (themePref === 'system') applyTheme();
   });
 
+  if (shared !== null) save(); // 共有リンクで開いた図はこの端末にも残す
   render();
   applyTheme();
 }
