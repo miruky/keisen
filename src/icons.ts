@@ -21,4 +21,9 @@ export const icons = {
   theme: svg(
     '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/>',
   ),
+  link: svg(
+    '<path d="M9.5 14.5 14.5 9.5"/>' +
+      '<path d="M8 11 6 13a3.5 3.5 0 0 0 5 5l2-2"/>' +
+      '<path d="M16 13l2-2a3.5 3.5 0 0 0-5-5l-2 2"/>',
+  ),
 } as const;
