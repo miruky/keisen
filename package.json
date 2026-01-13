@@ -1,7 +1,7 @@
 {
   "name": "keisen",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "罫線文字・ASCII図エディタ。SVG変換つき",
   "scripts": {
