@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { textToSvg } from './svgconv';
+import { colorizeSvg, textToSvg } from './svgconv';
 
 describe('textToSvg', () => {
   it('罫線文字を線として引き、グリフを置かない', () => {
@@ -68,5 +68,19 @@ describe('textToSvg', () => {
     // light 1.5*2=3、heavy 3.4*2=6.8
     expect(svg).toContain('stroke-width="3"');
     expect(svg).toContain('stroke-width="6.8"');
+  });
+});
+
+describe('colorizeSvg', () => {
+  it('currentColorを実際の色に固定する', () => {
+    const svg = textToSvg('─A');
+    const fixed = colorizeSvg(svg, '#202020');
+    expect(fixed).not.toContain('currentColor');
+    expect(fixed).toContain('stroke="#202020"');
+    expect(fixed).toContain('fill="#202020"');
+  });
+
+  it('currentColorを含まないSVGはそのまま返す', () => {
+    expect(colorizeSvg('<svg fill="#000"></svg>', '#fff')).toBe('<svg fill="#000"></svg>');
   });
 });
