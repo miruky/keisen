@@ -103,3 +103,12 @@ export function textToSvg(text: string, options: ConvertOptions = {}): string {
   parts.push(`</svg>`);
   return parts.join('\n');
 }
+
+/**
+ * SVG内のcurrentColorを実際の色に固定する。図はテーマ追従のためcurrentColorで
+ * 描くが、PNGへラスタライズするときや単体の画像として配るときは色が定まっている
+ * 必要があるため、書き出し直前に解決した文字色へ置き換える。
+ */
+export function colorizeSvg(svg: string, color: string): string {
+  return svg.replace(/currentColor/g, color);
+}
