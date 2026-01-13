@@ -26,4 +26,9 @@ export const icons = {
       '<path d="M8 11 6 13a3.5 3.5 0 0 0 5 5l2-2"/>' +
       '<path d="M16 13l2-2a3.5 3.5 0 0 0-5-5l-2 2"/>',
   ),
+  image: svg(
+    '<rect x="3" y="4" width="18" height="16" rx="2"/>' +
+      '<circle cx="8.5" cy="9.5" r="1.5"/>' +
+      '<path d="m4 18 4.5-4.5L12 17l3-3 5 5"/>',
+  ),
 } as const;
