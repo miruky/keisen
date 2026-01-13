@@ -128,6 +128,25 @@ svg {
   padding: calc(var(--step) * 4) calc(var(--step) * 3) calc(var(--step) * 8);
 }
 
+/* 編集面に入る前のひと呼吸。詰めた本文より一段大きく、計測幅を絞って読ませる */
+.lede {
+  max-width: 46ch;
+  margin: 0 0 calc(var(--step) * 4);
+  font-size: 1.12rem;
+  line-height: 1.85;
+  color: color-mix(in srgb, var(--ink) 78%, var(--paper));
+  text-wrap: pretty;
+}
+
+.lede code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  color: var(--accent);
+  background: var(--accent-weak);
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+}
+
 .site-footer {
   border-top: 1px solid var(--rule);
   color: var(--muted);
@@ -205,22 +224,25 @@ svg {
 
 /* ---- ツールバー ---- */
 
+/* 道具盤。箱で囲わず、上下のハリンと余白で本文と編集面のあいだに帯を作る */
 .toolbar {
   display: flex;
   align-items: flex-start;
   gap: calc(var(--step) * 4);
   flex-wrap: wrap;
+  padding: calc(var(--step) * 2.5) 0 calc(var(--step) * 3);
   margin-bottom: calc(var(--step) * 3);
+  border-top: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
 }
 
 .tool-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
 }
 
-.group-label,
-.templates-label {
+.group-label {
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -258,16 +280,11 @@ svg {
   color: var(--accent);
 }
 
-.templates {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.templates-row {
+.chip-row {
   display: flex;
   gap: 7px;
   flex-wrap: wrap;
+  max-width: 22rem;
 }
 
 .export-settings {
@@ -336,6 +353,39 @@ svg {
   font-variant-numeric: tabular-nums;
 }
 
+.preview-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--step) * 1.5);
+}
+
+/* 表示倍率の切替。下線つきのセグメントで、選択中だけアクセントを差す */
+.zoom {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.zoom-key {
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  padding: 1px 4px 2px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.zoom-key:hover {
+  color: var(--ink);
+}
+
+.zoom-key[aria-pressed='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 #editor {
   width: 100%;
   min-height: 440px;
@@ -395,9 +445,21 @@ svg {
 .hint {
   color: var(--muted);
   font-size: 0.82rem;
-  line-height: 1.7;
+  line-height: 1.9;
   margin: calc(var(--step) * 2) 0 0;
   max-width: 70ch;
+}
+
+.hint kbd {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0.05em 0.4em;
+  white-space: nowrap;
 }
 
 .preview .hint {
@@ -409,15 +471,39 @@ svg {
 /* ---- モーション ---- */
 
 @media (prefers-reduced-motion: no-preference) {
+  /* 上から順に面が立ち上がる。距離は控えめにして、道具が並んでいく感じだけ残す */
+  .lede,
+  .toolbar .tool-group,
   .workspace {
-    animation: view-in 0.46s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation: view-in 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+  .lede {
+    animation-delay: 0.02s;
+  }
+  .toolbar .tool-group:nth-child(1) {
+    animation-delay: 0.08s;
+  }
+  .toolbar .tool-group:nth-child(2) {
+    animation-delay: 0.13s;
+  }
+  .toolbar .tool-group:nth-child(3) {
+    animation-delay: 0.18s;
+  }
+  .toolbar .tool-group:nth-child(4) {
+    animation-delay: 0.23s;
+  }
+  .workspace {
+    animation-delay: 0.28s;
   }
 
   .button,
   .palette-key,
-  .icon-button {
+  .icon-button,
+  .zoom-key {
     transition:
       border-color 0.15s ease,
+      border-bottom-color 0.15s ease,
       background-color 0.15s ease,
       color 0.15s ease,
       transform 0.15s ease,
